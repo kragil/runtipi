@@ -72,30 +72,21 @@ export class AppExecutors {
 
     // Check if app has a docker-compose.json file
     if (await pathExists(path.join(repoPath, 'docker-compose.json'))) {
-      try {
-        // Generate docker-compose.yml file
-        const rawComposeConfig = await fs.promises.readFile(
-          path.join(repoPath, 'docker-compose.json'),
-          'utf-8',
-        );
-        const jsonComposeConfig = JSON.parse(rawComposeConfig);
+      // Generate docker-compose.yml file
+      const rawComposeConfig = await fs.promises.readFile(
+        path.join(repoPath, 'docker-compose.json'),
+        'utf-8',
+      );
+      const jsonComposeConfig = JSON.parse(rawComposeConfig);
 
-        const composeFile = getDockerCompose(jsonComposeConfig.services, form);
+      const composeFile = getDockerCompose(jsonComposeConfig.services, form);
 
-        await fs.promises.writeFile(dockerFilePath, composeFile);
-      } catch (err) {
-        this.logger.error(
-          `Error generating docker-compose.yml file for app ${appId}. Falling back to default docker-compose.yml`,
-        );
-        this.logger.error(err);
-        Sentry.captureException(err);
-      }
+      await fs.promises.writeFile(dockerFilePath, composeFile);
     }
 
     // Set permissions
-    await execAsync(`chmod -Rf a+rwx ${path.join(appDataDirPath)}`).catch((e) => {
+    await execAsync(`chmod -Rf a+rwx ${path.join(appDataDirPath)}`).catch(() => {
       this.logger.error(`Error setting permissions for app ${appId}`);
-      Sentry.captureException(e);
     });
   };
 
